@@ -5,6 +5,7 @@ const expoConfig = require('eslint-config-expo/flat');
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*'],
+    // admin/ = لوحة الإدارة (مشروع ويب منفصل)
+    ignores: ['dist/*', 'admin/**'],
   },
 ]);
