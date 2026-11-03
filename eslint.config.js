@@ -6,6 +6,6 @@ module.exports = defineConfig([
   expoConfig,
   {
     // admin/ = لوحة الإدارة (مشروع ويب منفصل)
-    ignores: ['dist/*', 'admin/**'],
+    ignores: ['dist/*', 'admin/**', 'desktop/**'],
   },
 ]);

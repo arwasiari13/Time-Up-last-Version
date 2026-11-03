@@ -61,6 +61,36 @@ function AuthGate() {
     return () => stopAutoSync();
   }, [isAuthenticated]);
 
+  // الضغط على إشعار انتهاء اشتراك يفتح صفحة ذلك المشترك
+  useEffect(() => {
+    if (!isAuthenticated || !Notifications) return;
+
+    const openSubscriber = (response: any) => {
+      const subscriberId = response?.notification?.request?.content?.data?.subscriberId;
+      if (subscriberId === undefined || subscriberId === null) return;
+      router.navigate(`/subscribers?focus=${encodeURIComponent(String(subscriberId))}` as any);
+    };
+
+    // التطبيق كان مغلقاً وفُتح بالضغط على الإشعار
+    Notifications.getLastNotificationResponseAsync?.()
+      .then((response: any) => {
+        if (!response) return;
+        openSubscriber(response);
+        // حتى لا يُفتح نفس المشترك في كل مرة يُفتح فيها التطبيق
+        Notifications.clearLastNotificationResponseAsync?.();
+      })
+      .catch(() => {});
+
+    // التطبيق مفتوح أو في الخلفية
+    let subscription: any;
+    try {
+      subscription = Notifications.addNotificationResponseReceivedListener(openSubscriber);
+    } catch (_e) {
+      // الإشعارات غير متاحة
+    }
+    return () => subscription?.remove?.();
+  }, [isAuthenticated, router]);
+
   // الإشعارات تُجدول بعد تسجيل الدخول اعتماداً على البيانات المحلية
   useEffect(() => {
     if (!isAuthenticated) return;

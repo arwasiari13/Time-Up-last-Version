@@ -5,6 +5,7 @@ import { Alert, Animated, Easing, Image, KeyboardAvoidingView, Modal, Platform, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 // هوك للتحقق من حالة التركيز على الصفحة والتنقل
 import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 // مكتبة الأيقونات
 import { Ionicons } from '@expo/vector-icons';
 // مكتبة التدرجات اللونية
@@ -23,6 +24,7 @@ import { addUserOffer, getUserOffers } from '../../src/database/offersDb';
 import { onSyncComplete } from '../../src/database/syncEngine';
 import SubscriberDetailsModal from '../../components/SubscriberDetailsModal';
 import OfferProgressList from '../../components/OfferProgressList';
+import DurationChips from '../../components/DurationChips';
 import { groupByPerson, personKey } from '../../src/utils/subscriberGroups';
 import { DEFAULT_OFFER_COLOR, getAccentOnSurface, getMutedBorderColor, getMutedCardColor, getOfferIcon, getReadableTextColor } from '../../src/constants/offers';
 import { useTheme } from '../../hooks/useTheme';
@@ -227,6 +229,19 @@ export default function Dashboard() {
       unsubscribe();
     };
   }, []);
+
+  // فتح مشترك معيّن عند الضغط على إشعاره (subscribers?focus=<id>)
+  const { focus } = useLocalSearchParams<{ focus?: string }>();
+  const router = useRouter();
+  useEffect(() => {
+    if (!focus || subscribers.length === 0) return;
+    const target = subscribers.find((sub) => String(sub.id) === String(focus));
+    if (target) {
+      openDetailsModal(target, itemsOfPerson(personKey(target)));
+    }
+    // نمسح المعامل حتى لا تُفتح النافذة مجدداً
+    router.setParams({ focus: undefined } as any);
+  }, [focus, subscribers]);
 
   // دالة لتطبيق الأنيميشن على كل البطاقات (نفس الصفحة الرئيسية)
   const getCardStyle = () => ({
@@ -481,9 +496,10 @@ export default function Dashboard() {
       : `${remainingDays} days`;
 
     const invoiceMessage = [
-      'Time Up - Subscription Invoice',
+      'Time Up - Invoice',
       '',
-      `Subscriber: ${currentInvoiceSubscriber.first_name || ''} ${currentInvoiceSubscriber.last_name || ''}`.trim(),
+      `Student: ${currentInvoiceSubscriber.first_name || ''} ${currentInvoiceSubscriber.last_name || ''}`.trim(),
+      `Subject: ${currentInvoiceSubscriber.offer || '-'}`,
       `Phone: ${currentInvoiceSubscriber.phone || '-'}`,
       `Address: ${currentInvoiceSubscriber.address || '-'}`,
       `Start Date: ${formatDateForInvoice(currentInvoiceSubscriber.start_date)}`,
@@ -532,7 +548,8 @@ export default function Dashboard() {
           <p class="sub">${INVOICE_BUSINESS_PHONE}</p>
 
           <div class="card">
-            <div class="row"><span class="key">Subscriber</span><span class="val">${(currentInvoiceSubscriber.first_name || '')} ${(currentInvoiceSubscriber.last_name || '')}</span></div>
+            <div class="row"><span class="key">Student</span><span class="val">${(currentInvoiceSubscriber.first_name || '')} ${(currentInvoiceSubscriber.last_name || '')}</span></div>
+            <div class="row"><span class="key">Subject</span><span class="val">${currentInvoiceSubscriber.offer || '-'}</span></div>
             <div class="row"><span class="key">Phone</span><span class="val">${currentInvoiceSubscriber.phone || '-'}</span></div>
             <div class="row"><span class="key">Address</span><span class="val">${currentInvoiceSubscriber.address || '-'}</span></div>
             <div class="row"><span class="key">Start</span><span class="val">${formatDateForInvoice(currentInvoiceSubscriber.start_date)}</span></div>
@@ -556,7 +573,7 @@ export default function Dashboard() {
     // في وضع "إضافة عرض آخر" بيانات الشخص موجودة مسبقاً — نتحقق من السعر فقط
     const personComplete = addOfferMode || (firstName && lastName && phone && address);
     if (!personComplete || !price) {
-      alert('يرجى ملء جميع الحقول المطلوبة');
+      alert(I18n.t('fillRequired'));
       return;
     }
     
@@ -653,12 +670,12 @@ export default function Dashboard() {
     if (!items.length) return false;
     const name = `${items[0].first_name} ${items[0].last_name}`.trim();
 
-    const title = singleOffer ? 'حذف العرض' : 'حذف المشترك';
+    const title = singleOffer ? I18n.t('deleteOffer') : I18n.t('deleteStudent');
     const message = singleOffer
-      ? `هل تريد حذف عرض "${items[0].offer || '-'}" من ${name}؟`
+      ? I18n.t('deleteSubjectOf', { offer: items[0].offer || '-', name })
       : items.length > 1
-      ? `هل تريد حذف ${name} مع كل عروضه (${items.length})؟`
-      : `هل تريد حذف ${name}؟`;
+      ? I18n.t('deleteStudentAll', { name, count: items.length })
+      : I18n.t('deleteStudentOne', { name });
 
     // تأكيد قبل الحذف — الحذف لا يمكن التراجع عنه
     const confirmed = await new Promise<boolean>((resolve) => {
@@ -666,8 +683,8 @@ export default function Dashboard() {
         title,
         message,
         [
-          { text: 'إلغاء', style: 'cancel', onPress: () => resolve(false) },
-          { text: 'حذف', style: 'destructive', onPress: () => resolve(true) },
+          { text: I18n.t('cancel'), style: 'cancel', onPress: () => resolve(false) },
+          { text: I18n.t('delete'), style: 'destructive', onPress: () => resolve(true) },
         ],
         { cancelable: true, onDismiss: () => resolve(false) }
       );
@@ -1683,6 +1700,14 @@ export default function Dashboard() {
                           }}>Start Date</Text>
                         </TouchableOpacity>
                         
+                        {/* مدة سريعة: أسبوع / شهر / سنة... تحسب تاريخ النهاية */}
+                        <DurationChips
+                          startDate={startDate}
+                          endDate={endDate}
+                          onPick={setEndDate}
+                          isDark={effectiveTheme === 'dark'}
+                        />
+
                         {/* حقل تاريخ النهاية */}
                         <TouchableOpacity 
                           style={{
@@ -1933,7 +1958,7 @@ export default function Dashboard() {
                           {/* Invoice Title Button */}
                           <View className="items-center mb-4">
                             <View className="bg-cyan-600 px-6 py-3 rounded-xl">
-                              <Text className="text-white text-base font-semibold">Subscription Invoice</Text>
+                              <Text className="text-white text-base font-semibold">{I18n.t('invoice')}</Text>
                             </View>
                           </View>
 
@@ -1967,7 +1992,7 @@ export default function Dashboard() {
 
                           {/* Subscription Information Card */}
                           <View className="bg-transparent rounded-xl p-0 mb-4">
-                            <Text className={`text-[17px] font-semibold ${effectiveTheme === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-3`}>Subscription Information</Text>
+                            <Text className={`text-[17px] font-semibold ${effectiveTheme === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-3`}>{I18n.t('invoiceDetails')}</Text>
                             <View className={`${effectiveTheme === 'dark' ? 'bg-slate-800 border-gray-600' : 'bg-gray-50 border-gray-200'} rounded-xl p-4 border-2`}>
                               <View className="flex-row justify-between items-center mb-3">
                                 <Text className={`text-[15px] ${effectiveTheme === 'dark' ? 'text-gray-300' : 'text-slate-600'} font-medium`}>Starts:</Text>
@@ -2071,6 +2096,17 @@ export default function Dashboard() {
         subscriber={currentDetailsSubscriber}
         onClose={closeDetailsModal}
         offers={currentDetailsOffers}
+        onEdit={() => {
+          const subscriber = currentDetailsSubscriber;
+          const offers = currentDetailsOffers;
+          closeDetailsModal();
+          // ننتظر إغلاق نافذة التفاصيل قبل فتح نافذة التعديل (iOS لا يعرض نافذتين معاً)
+          setTimeout(() => openEditModal(subscriber, offers), 300);
+        }}
+        onDelete={async () => {
+          const deleted = await handleDelete(currentDetailsOffers);
+          if (deleted) closeDetailsModal();
+        }}
       />
     </ScreenBackground>
   );

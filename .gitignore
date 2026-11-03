@@ -41,3 +41,11 @@ app-example
 # generated native folders
 /ios
 /android
+
+# local APK builds
+/release-apk
+
+# desktop build outputs (installers, 90-200MB - GitHub rejects >100MB)
+/desktop/release/
+/desktop/dist/
+/desktop/build/*.exe

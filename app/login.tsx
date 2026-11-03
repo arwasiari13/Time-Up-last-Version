@@ -25,10 +25,10 @@ const ACCENT_DEEP = '#0097a7';
 const LOGO_DARK = require('../assets/images/logo-dark.png');
 const LOGO_LIGHT = require('../assets/images/logo-light.png');
 
-// أبعاد الشعارين بعد القص: 879x319 و 979x493
+// أبعاد الشعارين الجديدين بعد القص: 727x314 و 724x322
 const LOGO_WIDTH = 230;
-const LOGO_DARK_RATIO = 879 / 319;
-const LOGO_LIGHT_RATIO = 979 / 493;
+const LOGO_DARK_RATIO = 727 / 314;
+const LOGO_LIGHT_RATIO = 724 / 322;
 
 export default function LoginScreen() {
   const { effectiveTheme, setTheme } = useTheme();
@@ -188,11 +188,6 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            {/* نسيت كلمة المرور */}
-            <Pressable style={styles.forgot} hitSlop={6}>
-              <Text style={styles.forgotText}>Forgot password?</Text>
-            </Pressable>
-
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
             {/* زر الدخول */}
@@ -279,8 +274,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   inputWithTrailing: { paddingRight: 44 },
-  forgot: { alignSelf: 'flex-end', marginTop: -8 },
-  forgotText: { fontSize: 12, fontWeight: '500', color: ACCENT },
   error: { color: '#ff6b6b', fontSize: 12, textAlign: 'center' },
   buttonShadow: {
     borderRadius: 12,

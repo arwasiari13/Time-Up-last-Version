@@ -34,6 +34,9 @@ interface Props {
   onClose: () => void;
   /** كل عروض الشخص — إذا كانت أكثر من واحد تُعرض كبطاقات صغيرة */
   offers?: DetailsSubscriber[];
+  /** عند تمريرهما تظهر أزرار التعديل والحذف أسفل البطاقة */
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 const parseDate = (value?: string) => {
@@ -58,7 +61,7 @@ const statusOf = (daysLeft?: number) => {
   return { label: I18n.t('active'), bg: '#DCFCE7', fg: '#15803D' };
 };
 
-export default function SubscriberDetailsModal({ visible, subscriber, onClose, offers }: Props) {
+export default function SubscriberDetailsModal({ visible, subscriber, onClose, offers, onEdit, onDelete }: Props) {
   const { effectiveTheme } = useTheme();
   const isDark = effectiveTheme === 'dark';
 
@@ -230,6 +233,44 @@ export default function SubscriberDetailsModal({ visible, subscriber, onClose, o
                     );
                   })}
               </ScrollView>
+
+              {/* أزرار صغيرة للتعديل والحذف */}
+              {(onEdit || onDelete) && (
+                <View style={styles.actions}>
+                  {onEdit && (
+                    <Pressable
+                      onPress={onEdit}
+                      style={({ pressed }) => [
+                        styles.actionBtn,
+                        {
+                          backgroundColor: isDark ? 'rgba(0,188,212,0.15)' : 'rgba(0,150,180,0.1)',
+                          borderColor: isDark ? 'rgba(0,188,212,0.3)' : 'rgba(0,150,180,0.25)',
+                        },
+                        pressed && styles.actionPressed,
+                      ]}
+                    >
+                      <Ionicons name="pencil" size={14} color="#00bcd4" />
+                      <Text style={[styles.actionText, { color: '#00bcd4' }]}>{I18n.t('edit')}</Text>
+                    </Pressable>
+                  )}
+                  {onDelete && (
+                    <Pressable
+                      onPress={onDelete}
+                      style={({ pressed }) => [
+                        styles.actionBtn,
+                        {
+                          backgroundColor: isDark ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.08)',
+                          borderColor: isDark ? 'rgba(239,68,68,0.35)' : 'rgba(239,68,68,0.25)',
+                        },
+                        pressed && styles.actionPressed,
+                      ]}
+                    >
+                      <Ionicons name="trash-outline" size={14} color="#EF4444" />
+                      <Text style={[styles.actionText, { color: '#EF4444' }]}>{I18n.t('delete')}</Text>
+                    </Pressable>
+                  )}
+                </View>
+              )}
             </View>
           </TouchableWithoutFeedback>
         </View>
@@ -268,4 +309,17 @@ const styles = StyleSheet.create({
   rowValue: { fontSize: 15, fontWeight: '500' },
   offerBlock: { borderWidth: 1, borderRadius: 14, padding: 12, marginBottom: 10 },
   offerIcon: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  actions: { flexDirection: 'row', gap: 10, marginTop: 6 },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  actionPressed: { opacity: 0.75 },
+  actionText: { fontSize: 13, fontWeight: '700' },
 });

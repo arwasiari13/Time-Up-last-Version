@@ -12,7 +12,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTabSwipeNavigation } from '../../hooks/useTabSwipeNavigation';
 import { useTheme } from '../../hooks/useTheme';
 import I18n, { getCurrentLocale, needsRTLReload, setLocale } from '../../src/i18n';
-import { getAllScheduledNotifications, sendTestNotification } from '../../src/services/notificationService';
+import FeedbackModal from '../../components/FeedbackModal';
+import Constants from 'expo-constants';
 
 export default function Dashboard() {
   // استخدام الثيم
@@ -20,19 +21,8 @@ export default function Dashboard() {
   const { signOut } = useAuth();
   const [offersModalVisible, setOffersModalVisible] = useState(false);
 
-  // اختبار الإشعارات: إرسال إشعار فوري + عرض عدد الإشعارات المجدولة
-  const handleTestNotification = async () => {
-    const sent = await sendTestNotification();
-    if (!sent) {
-      Alert.alert(I18n.t('notifications'), I18n.t('notifSendFailed'));
-      return;
-    }
-    const scheduled = await getAllScheduledNotifications();
-    Alert.alert(
-      I18n.t('notifTestSent'),
-      `${I18n.t('notifScheduledNow')}: ${scheduled?.length ?? 0}`
-    );
-  };
+  // نافذة الملاحظات (Feedback) — تُرسل إلى Firestore ويقرأها المشرف من لوحة الإدارة
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
   const { swipeGesture, swipeAnimatedStyle } = useTabSwipeNavigation('settings');
   
   // حالة اللغة المختارة
@@ -154,6 +144,8 @@ export default function Dashboard() {
         visible={offersModalVisible}
         onClose={() => setOffersModalVisible(false)}
       />
+
+      <FeedbackModal visible={feedbackVisible} onClose={() => setFeedbackVisible(false)} />
     </ScreenBackground>
   );
 
@@ -405,7 +397,7 @@ export default function Dashboard() {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* اختبار الإشعارات */}
+      {/* الملاحظات (Feedback) */}
       <Animated.View
         style={{
           opacity: extraOpacity,
@@ -415,7 +407,7 @@ export default function Dashboard() {
         }}
       >
         <TouchableOpacity
-          onPress={handleTestNotification}
+          onPress={() => setFeedbackVisible(true)}
           activeOpacity={0.8}
           className={`${
             effectiveTheme === 'dark' ? 'bg-[#1E1E1E]' : 'bg-white'
@@ -427,13 +419,13 @@ export default function Dashboard() {
               effectiveTheme === 'dark' ? 'bg-[#00B8DB]/20' : 'bg-[#E0F7FA]'
             }`}
           >
-            <Ionicons name="notifications-outline" size={18} color="#00B8DB" />
+            <Ionicons name="chatbubble-ellipses-outline" size={18} color="#00B8DB" />
           </View>
           <Text
             className="flex-1 text-[15px] font-semibold"
             style={{ color: effectiveTheme === 'dark' ? '#E5E7EB' : '#1F2937' }}
           >
-            {I18n.t('testNotifications')}
+            {I18n.t('feedback')}
           </Text>
           <Ionicons
             name="chevron-forward"
@@ -486,7 +478,7 @@ export default function Dashboard() {
               color: effectiveTheme === 'dark' ? '#D1D5DB' : '#4B5563',
             }}
           >
-            {I18n.t('about')} · Version 1.0.0
+            {I18n.t('about')} · Version {Constants.expoConfig?.version ?? '1.0.0'}
           </Text>
         </View>
         <Text style={{ fontSize: 11, lineHeight: 15, marginTop: 3, textAlign: 'center', color: '#0891B2' }}>

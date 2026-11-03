@@ -22,7 +22,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="subscribers"
         options={{
-          title: 'المشتركين',
+          title: 'التلاميذ',
         }}
       />
       <Tabs.Screen

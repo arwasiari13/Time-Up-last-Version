@@ -2,6 +2,7 @@
 // ملاحظة: نستخدم الإشعارات المحلية فقط
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import I18n from '../i18n';
 
 // Lazy load expo-notifications to avoid crashing in Expo Go SDK 53+
 let Notifications = null;
@@ -77,7 +78,7 @@ const ensureAndroidNotificationChannel = async () => {
 
   try {
     await Notifications.setNotificationChannelAsync(SUBSCRIPTIONS_CHANNEL_ID, {
-      name: 'تنبيهات الاشتراكات',
+      name: I18n.t('notifChannel'),
       importance: Notifications.AndroidImportance?.HIGH || 4,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF6B35',
@@ -104,7 +105,8 @@ const buildNotificationTrigger = (date) => {
 
 // دالة مساعدة لتنسيق التاريخ
 const formatDate = (date) => {
-  return date.toLocaleDateString('ar-SA', {
+  const locale = { ar: 'ar-DZ', fr: 'fr-FR' }[I18n.locale] || 'en-GB';
+  return date.toLocaleDateString(locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -119,12 +121,12 @@ const sendImmediateStatusNotification = async (subscriberId, subscriberName, end
 
   const contentByType = {
     expiring_soon: {
-      title: '⚠️ تنبيه: الاشتراك على وشك الانتهاء',
-      body: `اشتراك ${subscriberName} سينتهي قريبًا (${formatDate(endDateTime)}).`,
+      title: I18n.t('notifEndingTitle'),
+      body: I18n.t('notifEndingSoonBody', { name: subscriberName, date: formatDate(endDateTime) }),
     },
     expired: {
-      title: '🔴 انتهى الاشتراك!',
-      body: `اشتراك ${subscriberName} منتهي. يرجى التواصل لتجديد الاشتراك.`,
+      title: I18n.t('notifEndedTitle'),
+      body: I18n.t('notifEndedBody', { name: subscriberName }),
     },
   };
 
@@ -195,21 +197,21 @@ export const REMINDER_DAYS = [3, 2, 1, 0];
 const reminderContent = (daysBefore, subscriberName, endDateTime) => {
   if (daysBefore === 0) {
     return {
-      title: '🔴 انتهى الاشتراك!',
-      body: `اشتراك ${subscriberName} انتهى اليوم. يرجى التواصل لتجديد الاشتراك.`,
+      title: I18n.t('notifEndedTitle'),
+      body: I18n.t('notifEndedTodayBody', { name: subscriberName }),
     };
   }
 
   const dayWord =
     daysBefore === 1
-      ? 'غداً'
+      ? I18n.t('notifTomorrow')
       : daysBefore === 2
-      ? 'خلال يومين'
-      : `خلال ${daysBefore} أيام`;
+      ? I18n.t('notifIn2Days')
+      : I18n.t('notifInDays', { count: daysBefore });
 
   return {
-    title: '⚠️ تنبيه: اشتراك على وشك الانتهاء',
-    body: `اشتراك ${subscriberName} ينتهي ${dayWord} (${formatDate(endDateTime)})`,
+    title: I18n.t('notifEndingTitle'),
+    body: I18n.t('notifEndsInBody', { name: subscriberName, when: dayWord, date: formatDate(endDateTime) }),
   };
 };
 
@@ -476,8 +478,8 @@ export const sendTestNotification = async () => {
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: '🔔 اختبار الإشعارات',
-        body: 'نظام الإشعارات المحلية يعمل بشكل صحيح!',
+        title: I18n.t('notifTestTitle'),
+        body: I18n.t('notifTestBody'),
         sound: true,
       },
       trigger: null,

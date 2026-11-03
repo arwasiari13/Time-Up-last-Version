@@ -9,6 +9,7 @@ const config = getDefaultConfig(__dirname);
 // لوحة الإدارة (admin/) مشروع ويب منفصل داخل نفس المستودع — لا يقرأه Metro
 const escapeForRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const adminFolder = new RegExp(`^${escapeForRegex(path.join(__dirname, 'admin'))}[\\\\/]`);
+const desktopFolder = new RegExp(`^${escapeForRegex(path.join(__dirname, 'desktop'))}[\\\\/]`);
 const existingBlockList = config.resolver.blockList;
 config.resolver.blockList = [
   ...(Array.isArray(existingBlockList)
@@ -17,6 +18,7 @@ config.resolver.blockList = [
     ? [existingBlockList]
     : []),
   adminFolder,
+  desktopFolder,
 ];
 
 module.exports = withUniwindConfig(config, {

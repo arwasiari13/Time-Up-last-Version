@@ -2,7 +2,7 @@
   "expo": {
     "name": "TIME UP",
     "slug": "TIME_UP",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
     "scheme": "timeup",
@@ -13,12 +13,13 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#061F41",
         "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.TIMEUP.Ahmed"
+      "package": "com.TIMEUP.Ahmed",
+      "versionCode": 3
     },
     "web": {
       "output": "static",
@@ -33,9 +34,9 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#f0f9fc",
+          "backgroundColor": "#061F41",
           "dark": {
-            "backgroundColor": "#0d1525"
+            "backgroundColor": "#061F41"
           }
         }
       ],

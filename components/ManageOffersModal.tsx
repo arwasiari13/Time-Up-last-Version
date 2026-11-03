@@ -19,7 +19,6 @@ import {
   DEFAULT_OFFER_COLOR,
   getOfferIcon,
   getReadableTextColor,
-  OFFER_PRESETS,
 } from '../src/constants/offers';
 import { addUserOffer, deleteUserOffer, getUserOffers } from '../src/database/offersDb';
 import { onSyncComplete } from '../src/database/syncEngine';
@@ -74,7 +73,7 @@ export default function ManageOffersModal({ visible, onClose }: Props) {
     };
   }, [visible, load]);
 
-  const save =(offerName: string, offerColor: string) => {
+  const save = (offerName: string, offerColor: string) => {
     if (!offerName.trim()) return;
     setAdding(true);
     addUserOffer(offerName, offerColor, (id: string | null, error: string | null) => {
@@ -104,9 +103,6 @@ export default function ManageOffersModal({ visible, onClose }: Props) {
       },
     ]);
   };
-
-  const savedNames = offers.map((o) => o.name.toLowerCase());
-  const availablePresets = OFFER_PRESETS.filter((p) => !savedNames.includes(p.name.toLowerCase()));
 
   const text = isDark ? '#ffffff' : '#0d1525';
   const muted = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(13,21,37,0.55)';
@@ -188,7 +184,7 @@ export default function ManageOffersModal({ visible, onClose }: Props) {
                 <TextInput
                   value={name}
                   onChangeText={setName}
-                  placeholder="Netflix, Internet, ..."
+                  placeholder={I18n.t('offerName')}
                   placeholderTextColor={muted}
                   style={[styles.input, { backgroundColor: inputBg, borderColor: border, color: text }]}
                 />
@@ -246,42 +242,6 @@ export default function ManageOffersModal({ visible, onClose }: Props) {
                       {adding ? '...' : I18n.t('save')}
                     </Text>
                   </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            {/* عروض جاهزة للاختيار السريع */}
-            {availablePresets.length > 0 && (
-              <View style={{ marginTop: 22 }}>
-                <Text style={[styles.label, { color: muted, marginTop: 0 }]}>
-                  {I18n.t('pickKnownOffers')}
-                </Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  {availablePresets.map((preset) => (
-                    <TouchableOpacity
-                      key={preset.name}
-                      activeOpacity={0.8}
-                      onPress={() => save(preset.name, preset.color)}
-                      disabled={adding}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 6,
-                        paddingHorizontal: 12,
-                        paddingVertical: 8,
-                        borderRadius: 20,
-                        borderWidth: 1,
-                        borderColor: border,
-                        backgroundColor: inputBg,
-                      }}
-                    >
-                      <Ionicons name={preset.icon as any} size={14} color={preset.color} />
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: text }}>
-                        {preset.name}
-                      </Text>
-                      <Ionicons name="add" size={14} color={muted} />
-                    </TouchableOpacity>
-                  ))}
                 </View>
               </View>
             )}

@@ -13,6 +13,7 @@ import { addUserOffer } from '../../src/database/offersDb';
 import SubscriberDetailsModal, { formatDate } from '../../components/SubscriberDetailsModal';
 import SubscriberListModal from '../../components/SubscriberListModal';
 import OfferProgressList from '../../components/OfferProgressList';
+import DurationChips from '../../components/DurationChips';
 import { groupByPerson, PersonGroup } from '../../src/utils/subscriberGroups';
 import { Donut, OfferRanking, RevenueBars } from '../../components/DashboardCharts';
 import { DEFAULT_OFFER_COLOR, getAccentOnSurface, getMutedBorderColor, getMutedCardColor, getOfferIcon, getReadableTextColor } from '../../src/constants/offers';
@@ -168,7 +169,7 @@ export default function Dashboard() {
         setSubscribers(processed);
       } catch (e) {
         console.error('Error processing subscribers:', e);
-        setError('فشل في تحميل البيانات');
+        setError(I18n.t('loadFailed'));
       } finally {
         setLoading(false);
       }
@@ -505,6 +506,14 @@ export default function Dashboard() {
                       />
                     )}
 
+                    {/* مدة سريعة: أسبوع / شهر / سنة... تحسب تاريخ النهاية */}
+                    <DurationChips
+                      startDate={startDate}
+                      endDate={endDate}
+                      onPick={setEndDate}
+                      isDark={effectiveTheme === 'dark'}
+                    />
+
                     {/* End Date */}
                     <View className="relative my-2">
                       <Text className={`absolute left-4 -top-2 px-1.5 text-xs font-semibold z-10 ${effectiveTheme === 'dark' ? 'bg-slate-800 text-cyan-400' : 'bg-gray-50 text-blue-600'}`}>
@@ -756,7 +765,7 @@ export default function Dashboard() {
         >
           <Text style={{ fontSize: 24, fontWeight: '700', color: text }}>{I18n.t('dashboard')}</Text>
           <Text style={{ fontSize: 13, color: muted, marginTop: 2 }}>
-            {personGroups.length} {I18n.t('subscribers')} · {counts.all} {I18n.t('subscriptionsCount')} · {ranking.length} {I18n.t('offers')} ·{' '}
+            {personGroups.length} {I18n.t('clients')} · {counts.all} {I18n.t('subscriptionsCount')} · {ranking.length} {I18n.t('offers')} ·{' '}
             <Text style={{ color: '#00bcd4', fontWeight: '600' }}>{totalRevenue} DZD</Text>
           </Text>
         </Animated.View>
